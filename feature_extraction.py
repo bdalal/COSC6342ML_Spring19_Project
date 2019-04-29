@@ -311,20 +311,16 @@ def word_ngrams(data, ngram_range=(2, 9), binary=True):
     cv = CountVectorizer(ngram_range=ngram_range, binary=binary)
     transformed_blog = cv.fit_transform(blogs)
 
-    data['TransformedBlog'] = transformed_blog
-
-    return data
+    return cv, transformed_blog
 
 
 def char_ngrams(data, ngram_range=(2, 9), binary=True):
     blogs = data.Blog.astype(str).values
 
     cv = CountVectorizer(ngram_range=ngram_range, binary=binary, analyzer='char')
-    transformed_blog = cv.fit_transform(blogs)
+    transformed_blog_char = cv.fit_transform(blogs)
 
-    data['TransformedBlog'] = transformed_blog
-
-    return data
+    return cv, transformed_blog_char
 
 
 def pos_ngrams(data, ngram_range=(2, 9), binary=True):
@@ -333,9 +329,7 @@ def pos_ngrams(data, ngram_range=(2, 9), binary=True):
     cv = CountVectorizer(ngram_range=ngram_range, binary=binary)
     transformed_pos = cv.fit_transform(pos)
 
-    data['TransformedBlog'] = transformed_pos
-
-    return data
+    return cv, transformed_pos
 
 
 def word2vec(data, skip_gram=1):
