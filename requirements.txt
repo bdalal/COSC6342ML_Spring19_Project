@@ -1,6 +1,10 @@
 flair>=0.4.1
 pandas>=0.24.2
 numpy>=1.16.3
-sklearn>=0.20.3
+scikit-learn>=0.20.3
 gensim>=3.7.1
 nltk>=3.4
+tensorflow-gpu>=1.13.1
+Keras>=2.2.4
+xgboost>=0.82
+scipy>=1.2.1
