@@ -1,0 +1,6 @@
+flair>=0.4.1
+pandas>=0.24.2
+numpy>=1.16.3
+sklearn>=0.20.3
+gensim>=3.7.1
+nltk>=3.4
