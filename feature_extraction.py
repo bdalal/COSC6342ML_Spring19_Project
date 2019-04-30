@@ -305,7 +305,7 @@ def count_title_words(data):
     return data
 
 
-def word_ngrams(data, ngram_range=(2, 9), binary=True):
+def word_ngrams(data, ngram_range=(2, 8), binary=True):
     blogs = data.Blog.astype(str).values
 
     cv = CountVectorizer(ngram_range=ngram_range, binary=binary)
@@ -314,7 +314,7 @@ def word_ngrams(data, ngram_range=(2, 9), binary=True):
     return cv, transformed_blog
 
 
-def char_ngrams(data, ngram_range=(2, 9), binary=True):
+def char_ngrams(data, ngram_range=(2, 8), binary=True):
     blogs = data.Blog.astype(str).values
 
     cv = CountVectorizer(ngram_range=ngram_range, binary=binary, analyzer='char')
@@ -323,7 +323,7 @@ def char_ngrams(data, ngram_range=(2, 9), binary=True):
     return cv, transformed_blog_char
 
 
-def pos_ngrams(data, ngram_range=(2, 9), binary=True):
+def pos_ngrams(data, ngram_range=(2, 8), binary=True):
     pos = data.POS.values
 
     cv = CountVectorizer(ngram_range=ngram_range, binary=binary)
