@@ -9,6 +9,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 
 def pos_tag(data, model_type='pos-fast'):
@@ -340,3 +341,8 @@ def word2vec(data, skip_gram=1):
     model = Word2Vec(blogs, min_count=10, workers=4, sg=skip_gram)
 
     return model
+
+
+def scale_features(features):
+    scaler = MinMaxScaler()
+    return scaler.fit_transform(features)
