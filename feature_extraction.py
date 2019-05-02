@@ -3,6 +3,7 @@ from flair.data import Sentence
 from string import punctuation
 
 from gensim.models import Word2Vec, Doc2Vec
+from gensim.models.doc2vec import TaggedDocument
 from nltk import sent_tokenize, TweetTokenizer
 from nltk.corpus import stopwords
 from sklearn.decomposition import LatentDirichletAllocation
@@ -376,15 +377,19 @@ def lda_clusters(data, n_features=50000, n_topics=20, top_words=10):
 def doc2vec(train_data, test_data):
     train_blogs = train_data[['Blog', 'Gender']]
     test_blogs = test_data[['Blog', 'Gender']]
-    model_dm = Doc2Vec(train_blogs, dm=1, vector_size=600, negative=5, hs=1, min_count=5, sample=0, workers=4,
-                       dm_concat=1, window=5)
+    train_blogs = train_blogs.apply(lambda entry: TaggedDocument(str(entry['Blog']).split(" "), entry['Gender']),
+                                    axis=1)
+    test_blogs = test_blogs.apply(lambda entry: TaggedDocument(str(entry['Blog']).split(" "), entry['Gender']),
+                                  axis=1)
+    model_dm = Doc2Vec(train_blogs, dm=0, vector_size=5, negative=5, hs=0, min_count=5, sample=0, workers=4,
+                       dm_concat=0, window=1)
 
     def vec_for_learning(model, tagged_docs):
         sents = tagged_docs.values
         targets, regressors = zip(*[(doc.tags[0], model.infer_vector(doc.words, epochs=20)) for doc in tqdm(sents)])
         return targets, regressors
 
-    y_train, X_train = vec_for_learning(model_dm, train_blogs)
-    y_test, X_test = vec_for_learning(model_dm, test_blogs)
+    y_train, x_train = vec_for_learning(model_dm, train_blogs)
+    y_test, x_test = vec_for_learning(model_dm, test_blogs)
 
-    return X_train, X_test, y_train, y_test
+    return x_train, x_test, y_train, y_test
