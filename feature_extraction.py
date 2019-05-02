@@ -2,14 +2,16 @@ from flair.models import SequenceTagger
 from flair.data import Sentence
 from string import punctuation
 
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, Doc2Vec
 from nltk import sent_tokenize, TweetTokenizer
 from nltk.corpus import stopwords
+from sklearn.decomposition import LatentDirichletAllocation
 
 from sklearn.feature_extraction.text import CountVectorizer
 
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+from tqdm import tqdm
 
 
 def pos_tag(data, model_type='pos-fast'):
@@ -346,3 +348,43 @@ def word2vec(data, skip_gram=1):
 def scale_features(features):
     scaler = MinMaxScaler()
     return scaler.fit_transform(features)
+
+
+def lda_clusters(data, n_features=50000, n_topics=20, top_words=10):
+    blogs_m = data[data.Gender == 'M'].Blog.values.astype(str)
+    blogs_f = data[data.Gender == 'F'].Blog.values.astype(str)
+    vectorizer_m = CountVectorizer(max_df=0.5, max_features=n_features, min_df=2, stop_words='english')
+    vectorizer_f = CountVectorizer(max_df=0.5, max_features=n_features, min_df=2, stop_words='english')
+    xm = vectorizer_m.fit_transform(blogs_m)
+    xf = vectorizer_f.fit_transform(blogs_f)
+    feature_names_m = vectorizer_m.get_feature_names()
+    feature_names_f = vectorizer_f.get_feature_names()
+    lda_m = LatentDirichletAllocation(n_topics=n_topics, max_iter=10, learning_method='online',
+                                      learning_offset=50., random_state=0).fit(xm)
+    lda_f = LatentDirichletAllocation(n_topics=n_topics, max_iter=10, learning_method='online',
+                                      learning_offset=50., random_state=0).fit(xf)
+    male_topics = []
+    female_topics = []
+    for topic_idx, topic in enumerate(lda_m.components_):
+        male_topics.append(" ".join([feature_names_m[i] for i in topic.argsort()[:-top_words - 1:-1]]))
+    for topic_idx, topic in enumerate(lda_f.components_):
+        female_topics.append(" ".join([feature_names_f[i] for i in topic.argsort()[:-top_words - 1:-1]]))
+
+    return male_topics, female_topics
+
+
+def doc2vec(train_data, test_data):
+    train_blogs = train_data[['Blog', 'Gender']]
+    test_blogs = test_data[['Blog', 'Gender']]
+    model_dm = Doc2Vec(train_blogs, dm=1, vector_size=600, negative=5, hs=1, min_count=5, sample=0, workers=4,
+                       dm_concat=1, window=5)
+
+    def vec_for_learning(model, tagged_docs):
+        sents = tagged_docs.values
+        targets, regressors = zip(*[(doc.tags[0], model.infer_vector(doc.words, epochs=20)) for doc in tqdm(sents)])
+        return targets, regressors
+
+    y_train, X_train = vec_for_learning(model_dm, train_blogs)
+    y_test, X_test = vec_for_learning(model_dm, test_blogs)
+
+    return X_train, X_test, y_train, y_test
