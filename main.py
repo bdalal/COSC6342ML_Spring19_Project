@@ -55,11 +55,12 @@ def cross_val(clf, data_folds, gender_folds, feature_gen=True):
         if feature_gen:
             train_data = pd.concat(data for data in data_folds[:i] + data_folds[i + 1:])
             train_gender = pd.concat(gender for gender in gender_folds[:i] + gender_folds[i + 1:])
-            selected_train, selected_test = train_data, test_data
+            selected_train, selected_test = get_features(train_data, test_data, train_gender)
         else:
-            train_data = np.concatenate(tuple([data for data in data_folds[:i] + data_folds[i + 1:]]))
-            train_gender = np.concatenate(tuple([gender for gender in gender_folds[:i] + gender_folds[i + 1:]]))
-            selected_train, selected_test = train_data, test_data
+            train_data = pd.concat(data for data in data_folds[:i] + data_folds[i + 1:])
+            train_gender = pd.concat(gender for gender in gender_folds[:i] + gender_folds[i + 1:])
+            selected_train, selected_test, train_gender, test_gender = doc2vec(
+                pd.concat([train_data, train_gender], axis=1), pd.concat([test_data, test_gender], axis=1))
 
         clf.fit(selected_train, train_gender)
         score = clf.score(selected_test, test_gender)
@@ -81,38 +82,42 @@ def test_set(clf, data_train, data_test, gender_train, gender_test, feature_gen=
     clf.fit(selected_train, gender_train)
     print("\nScore on test data = ", clf.score(selected_test, gender_test))
     print("Time taken = ", datetime.now() - start_time)
+    print("\n")
 
 
-# data_train_val, data_test, gender_train_val, gender_test = train_test_split(
-#     data_new.loc[:, data_new.columns != 'Gender'], data_new.Gender, test_size=0.1, shuffle=True,
-#     stratify=data_new.Gender, random_state=42)
-#
-# data_train, data_val, gender_train, gender_val = train_test_split(data_train_val, gender_train_val, shuffle=True,
-#                                                                   test_size=0.22, stratify=gender_train_val,
-#                                                                   random_state=42)
+data_train_val, data_test, gender_train_val, gender_test = train_test_split(
+    data_new.loc[:, data_new.columns != 'Gender'], data_new.Gender, test_size=0.1, shuffle=True,
+    stratify=data_new.Gender, random_state=42)
 
-# data_folds = np.array_split(data_train_val, 10)
-# gender_folds = np.array_split(gender_train_val, 10)
-#
-# # MLP
-# clf = MLPClassifier(hidden_layer_sizes=(75, 75), solver='adam', activation='identity', early_stopping=True,
-#                     max_iter=2500, random_state=42)
-# cross_val(clf, data_folds, gender_folds)
-# test_set(clf, data_train, data_test)
-#
-# # XGBoost
-# clf = XGBClassifier(n_jobs=-1, max_depth=35, n_estimators=200, booster='dart', importance_type='total_gain')
-# cross_val(clf, data_folds, gender_folds)
-# test_set(clf, data_train, data_test)
+data_train, data_val, gender_train, gender_val = train_test_split(data_train_val, gender_train_val, shuffle=True,
+                                                                  test_size=0.22, stratify=gender_train_val,
+                                                                  random_state=42)
+
+data_folds = np.array_split(data_train_val, 10)
+gender_folds = np.array_split(gender_train_val, 10)
+
+# MLP
+clf = MLPClassifier(hidden_layer_sizes=(75, 75), solver='adam', activation='identity', early_stopping=True,
+                    max_iter=2500, random_state=42)
+cross_val(clf, data_folds, gender_folds)
+test_set(clf, data_train, data_test, gender_train, gender_test)
+
+# XGBoost
+clf = XGBClassifier(n_jobs=-1, max_depth=35, n_estimators=200, booster='dart', importance_type='total_gain')
+cross_val(clf, data_folds, gender_folds)
+test_set(clf, data_train, data_test, gender_train, gender_test)
 
 # Doc2Vec
-data_train_val, data_test = train_test_split(data_new[['Blog', 'Gender']], shuffle=True,
-                                             test_size=0.1, stratify=data_new['Gender'],
-                                             random_state=42)
 
-data_train, data_test, gender_train, gender_test = doc2vec(data_train_val, data_test)
-data_folds = np.array_split(data_train, 10)
-gender_folds = np.array_split(gender_train, 10)
+data_train_val, data_test, gender_train_val, gender_test = train_test_split(data_new.Blog, data_new.Gender,
+                                                                            shuffle=True,
+                                                                            test_size=0.1, stratify=data_new.Gender,
+                                                                            random_state=42)
+
+data_train, data_test, gender_train, gender_test = doc2vec(pd.concat([data_train_val, gender_train_val], axis=1),
+                                                           pd.concat([data_test, gender_test], axis=1))
+data_folds = np.array_split(data_train_val, 10)
+gender_folds = np.array_split(gender_train_val, 10)
 
 clf = MLPClassifier(hidden_layer_sizes=(75, 75), solver='adam', activation='identity', early_stopping=True,
                     max_iter=2500, random_state=42)
