@@ -99,11 +99,13 @@ gender_folds = np.array_split(gender_train_val, 10)
 # MLP
 clf = MLPClassifier(hidden_layer_sizes=(75, 75), solver='adam', activation='identity', early_stopping=True,
                     max_iter=2500, random_state=42)
+print("10-fold CV and testing using MLP on curated features")
 cross_val(clf, data_folds, gender_folds)
 test_set(clf, data_train, data_test, gender_train, gender_test)
 
 # XGBoost
 clf = XGBClassifier(n_jobs=-1, max_depth=35, n_estimators=200, booster='dart', importance_type='total_gain')
+print("10-fold CV and testing using XGBoost on curated features")
 cross_val(clf, data_folds, gender_folds)
 test_set(clf, data_train, data_test, gender_train, gender_test)
 
@@ -121,9 +123,11 @@ gender_folds = np.array_split(gender_train_val, 10)
 
 clf = MLPClassifier(hidden_layer_sizes=(75, 75), solver='adam', activation='identity', early_stopping=True,
                     max_iter=2500, random_state=42)
+print("10-fold CV and testing on Doc2Vec features using MLP")
 cross_val(clf, data_folds, gender_folds, False)
 test_set(clf, data_train, data_test, gender_train, gender_test, False)
 
 clf = SVC(C=2500, gamma='auto')
+print("10-fold CV and testing on Doc2Vec features using SVM")
 cross_val(clf, data_folds, gender_folds, False)
 test_set(clf, data_train, data_test, gender_train, gender_test, False)
