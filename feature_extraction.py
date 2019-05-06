@@ -381,8 +381,8 @@ def doc2vec(train_data, test_data):
                                     axis=1)
     test_blogs = test_blogs.apply(lambda entry: TaggedDocument(str(entry['Blog']).split(" "), entry['Gender']),
                                   axis=1)
-    model_dm = Doc2Vec(train_blogs, dm=0, vector_size=5, negative=5, hs=0, min_count=5, sample=0, workers=4,
-                       dm_concat=0, window=1)
+    model_dm = Doc2Vec(train_blogs, dm=0, vector_size=600, negative=5, hs=0, min_count=5, sample=0, workers=4,
+                       dm_concat=0, window=5)
 
     def vec_for_learning(model, tagged_docs):
         sents = tagged_docs.values
