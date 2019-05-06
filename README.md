@@ -22,4 +22,4 @@ The `data` folder consists of the feature file, the csv data, and the word facto
 
 The `notebooks` folder consists more than 20 jupyter notebooks that I used to prototype my solution and try out different approaches.
 
-The `results` folder contains a spreadsheet which has recorded the results for various runs as presented in the paper. 
+The `results` folder contains the project report in ACL 2019 tex format and a spreadsheet which has recorded the results for various runs as presented in the paper. 
