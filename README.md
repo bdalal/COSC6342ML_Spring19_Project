@@ -1,7 +1,7 @@
 ## COSC 6342 Course Project
 ### Binoy Dalal (1794070), Spring 2019
-***
 #### Gender classification of blog authors
+***
 
 Environment:
 * Python 3.6
